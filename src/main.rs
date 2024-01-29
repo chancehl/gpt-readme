@@ -2,7 +2,12 @@ use clap::Parser;
 use dotenv::dotenv;
 use reqwest::{Client, Error};
 use serde::{Deserialize, Serialize};
-use std::{env, fs, path::PathBuf};
+use std::{
+    env,
+    fs::{self, File},
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 /// A program to generate a README for your project with ChatGPT.
 #[derive(Parser, Debug)]
@@ -27,6 +32,17 @@ struct Root {
 struct Message {
     role: String,
     content: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ChatCompletion {
+    choices: Vec<Choice>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Choice {
+    index: u8,
+    message: Message,
 }
 
 #[tokio::main]
@@ -73,12 +89,20 @@ async fn main() -> Result<(), Error> {
         .send()
         .await?;
 
-    println!("Status: {}", response.status());
-    println!("Headers:\n{:#?}", response.headers());
+    // Convert body to json
+    let body = response.json::<ChatCompletion>().await?;
 
-    let body = response.text().await?;
+    // Grab content
+    let content = &body.choices[0].message.content;
 
-    println!("Body:\n{}", body);
+    // Create outfile path
+    let outfile = Path::join(&args.out, "README.md");
+
+    // Create file handle
+    let mut readme_file = File::create(outfile).expect("Could not write to README.md file");
+
+    //  Write
+    let _ = write!(readme_file, "{}", content);
 
     Ok(())
 }
