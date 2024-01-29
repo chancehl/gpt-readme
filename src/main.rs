@@ -53,13 +53,14 @@ struct Choice {
 }
 
 fn generate_git_diff() -> Result<String, Box<dyn std::error::Error>> {
-    let command = Command::new("git")
+    let output = Command::new("git")
         .arg("diff")
         .arg(INITIAL_COMMIT_HASH)
         .arg("HEAD")
+        .arg(":!*.lock")
         .output()?;
 
-    let stdout = String::from_utf8_lossy(&command.stdout);
+    let stdout = String::from_utf8_lossy(&output.stdout);
 
     Ok(stdout.to_string())
 }
