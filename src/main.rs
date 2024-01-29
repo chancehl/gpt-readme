@@ -96,7 +96,7 @@ async fn main() -> Result<(), Error> {
 
     // Define body
     let body = Root {
-        model: "gpt-3.5-turbo".to_string(),
+        model: "gpt-4".to_string(),
         messages: vec![system_message, user_message],
     };
 
