@@ -11,4 +11,5 @@ dotenv = "0.15.0"
 reqwest = { version = "0.11.23", features = ["json"] }
 serde = { version = "1.0.196", features = ["derive"] }
 serde_json = "1.0.112"
+spinners = "4.1.1"
 tokio = { version = "1.35.1", features = ["full"] }

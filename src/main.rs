@@ -2,6 +2,7 @@ use clap::Parser;
 use dotenv::dotenv;
 use reqwest::{Client, Error};
 use serde::{Deserialize, Serialize};
+use spinners::{Spinner, Spinners};
 use std::{
     env,
     fs::File,
@@ -100,6 +101,9 @@ async fn main() -> Result<(), Error> {
         messages: vec![system_message, user_message],
     };
 
+    // Instantiate spinner
+    let mut spinner = Spinner::new(Spinners::Dots9, "Generating README.md file...".into());
+
     // Execute http request
     let response = client
         .post("https://api.openai.com/v1/chat/completions")
@@ -123,6 +127,9 @@ async fn main() -> Result<(), Error> {
 
     //  Write
     let _ = write!(readme_file, "{}\n\n{}", content, FOOTER);
+
+    // Stop spinner
+    spinner.stop();
 
     // Inform user of success
     println!("Wrote README to {:?}", &outfile);
