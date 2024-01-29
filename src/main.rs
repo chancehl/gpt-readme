@@ -119,10 +119,13 @@ async fn main() -> Result<(), Error> {
     let outfile = Path::join(&args.out, "README.md");
 
     // Create file handle
-    let mut readme_file = File::create(outfile).expect("Could not write to README.md file");
+    let mut readme_file = File::create(&outfile).expect("Could not write to README.md file");
 
     //  Write
     let _ = write!(readme_file, "{}\n\n{}", content, FOOTER);
+
+    // Inform user of success
+    println!("Wrote README to {:?}", &outfile);
 
     Ok(())
 }
