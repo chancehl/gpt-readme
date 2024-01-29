@@ -1,0 +1,85 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..ea8c4bf
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1 @@
++/target
+diff --git a/Cargo.toml b/Cargo.toml
+new file mode 100644
+index 0000000..7280967
+--- /dev/null
++++ b/Cargo.toml
+@@ -0,0 +1,12 @@
++[package]
++name = "gpt-readme"
++version = "0.1.0"
++edition = "2021"
++
++# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
++
++[dependencies]
++reqwest = { version = "0.11.23", features = ["json"] }
++serde = { version = "1.0.196", features = ["derive"] }
++serde_json = "1.0.112"
++tokio = { version = "1.35.1", features = ["full"] }
+diff --git a/src/main.rs b/src/main.rs
+new file mode 100644
+index 0000000..2b62e08
+--- /dev/null
++++ b/src/main.rs
+@@ -0,0 +1,54 @@
++use serde::{Deserialize, Serialize};
++// use std::error::Error;
++use reqwest::Error;
++
++extern crate reqwest;
++
++#[derive(Serialize, Deserialize)]
++struct GitDiff {
++    diff: String,
++}
++
++#[derive(Serialize, Deserialize)]
++struct ChatGPTRequest {
++    git_diff: GitDiff,
++}
++
++#[derive(Serialize, Deserialize)]
++struct ChatGPTResponse {
++    readme: String,
++}
++
++async fn generate_readme(git_diff: GitDiff) -> Result<String, Error> {
++    let api_url = "";
++
++    let client = reqwest::Client::new();
++
++    let request = ChatGPTRequest { git_diff };
++
++    let response = client.post(api_url).json(&request).send().await?;
++
++    if response.status().is_success() {
++        let response_data: ChatGPTResponse = response.json().await?;
++
++        Ok(response_data.readme)
++    } else {
++        Err(response.error_for_status().unwrap_err())
++    }
++}
++
++#[tokio::main]
++async fn main() {
++    let git_diff = GitDiff {
++        diff: "TODO".to_owned(),
++    };
++
++    match generate_readme(git_diff).await {
++        Ok(readme) => {
++            println!("{}", readme)
++        }
++        Err(error) => {
++            eprintln!("{}", error)
++        }
++    }
++}
