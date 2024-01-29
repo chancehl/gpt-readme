@@ -131,8 +131,5 @@ async fn main() -> Result<(), Error> {
     // Stop spinner
     spinner.stop();
 
-    // Inform user of success
-    println!("Wrote README to {:?}", &outfile);
-
     Ok(())
 }
