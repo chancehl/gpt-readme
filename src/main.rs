@@ -4,10 +4,17 @@ use reqwest::{Client, Error};
 use serde::{Deserialize, Serialize};
 use std::{
     env,
-    fs::{self, File},
+    fs::File,
     io::Write,
     path::{Path, PathBuf},
+    process::Command,
 };
+
+// This is some magic hash that is available in every git repository
+// https://stackoverflow.com/a/40884093
+const INITIAL_COMMIT_HASH: &str = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
+
+const FOOTER: &str = "Shamelessly generated with LLM labor 🦾🤖";
 
 /// A program to generate a README for your project with ChatGPT.
 #[derive(Parser, Debug)]
@@ -45,6 +52,18 @@ struct Choice {
     message: Message,
 }
 
+fn generate_git_diff() -> Result<String, Box<dyn std::error::Error>> {
+    let command = Command::new("git")
+        .arg("diff")
+        .arg(INITIAL_COMMIT_HASH)
+        .arg("HEAD")
+        .output()?;
+
+    let stdout = String::from_utf8_lossy(&command.stdout);
+
+    Ok(stdout.to_string())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // Initialize .env file
@@ -54,7 +73,7 @@ async fn main() -> Result<(), Error> {
     let args = Args::parse();
 
     // Pull diff
-    let diff = fs::read_to_string("./diff.txt").expect("Could not read diff.txt file");
+    let diff = generate_git_diff().expect("Could not generate git diff");
 
     // Read key
     let openai_api_key = env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not set");
@@ -102,7 +121,7 @@ async fn main() -> Result<(), Error> {
     let mut readme_file = File::create(outfile).expect("Could not write to README.md file");
 
     //  Write
-    let _ = write!(readme_file, "{}", content);
+    let _ = write!(readme_file, "{}\n\n{}", content, FOOTER);
 
     Ok(())
 }
