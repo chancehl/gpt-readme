@@ -53,12 +53,13 @@ struct Choice {
     message: Message,
 }
 
-fn generate_git_diff() -> Result<String, Box<dyn std::error::Error>> {
+fn generate_git_diff(dir: &PathBuf) -> Result<String, Box<dyn std::error::Error>> {
     let output = Command::new("git")
         .arg("diff")
         .arg(INITIAL_COMMIT_HASH)
         .arg("HEAD")
         .arg(":!*.lock")
+        .current_dir(dir)
         .output()?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -75,7 +76,7 @@ async fn main() -> Result<(), Error> {
     let args = Args::parse();
 
     // Pull diff
-    let diff = generate_git_diff().expect("Could not generate git diff");
+    let diff = generate_git_diff(&args.path).expect("Could not generate git diff");
 
     // Read key
     let openai_api_key = env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not set");
